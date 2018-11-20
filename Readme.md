@@ -21,7 +21,10 @@ docker run -it --rm \
   -e VPNADDR=host:port \
   -e VPNUSER=me@domain \
   -e VPNPASS=secret \
-  auchandirect/forticlient
+  -e MAILUSER=imapuser \
+  -e MAILPASSWORD=secret \
+  -e MAILSERVER=imap.mail.com \
+  siwa/forticlient
 
 # Add route for you remote subnet (ex. 10.201.0.0/16)
 ip route add 10.201.0.0/16 via 172.20.0.2
@@ -48,7 +51,10 @@ docker run -it --rm \
   -e VPNADDR=host:port \
   -e VPNUSER=me@domain \
   -e VPNPASS=secret \
-  auchandirect/forticlient
+  -e MAILUSER=imapuser \
+  -e MAILPASSWORD=secret \
+  -e MAILSERVER=imap.mail.com \
+  siwa/forticlient
 
 # Add route for you remote subnet (ex. 10.201.0.0/16)
 sudo route add -net 10.201.0.0/16 $(docker-machine ip fortinet)

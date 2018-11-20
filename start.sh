@@ -21,7 +21,7 @@ while [ true ]; do
   sleep 10
   
   #If not set then exit
-  if [ -z $Reconnect ]; then
+  if [ $Reconnect != "true" ] || [ $Reconnect != "TRUE" ]; then
     exit;
   fi
   

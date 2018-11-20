@@ -2,7 +2,7 @@
 
 set timeout $env(VPNTIMEOUT)
 
-spawn "/usr/share/forticlient/opt/forticlient-sslvpn/64bit/forticlientsslvpn_cli" --server $env(VPNADDR) --vpnuser $env(VPNUSER) --keepalive
+spawn "/root/forticlientsslvpn/64bit/forticlientsslvpn_cli" --server $env(VPNADDR) --vpnuser $env(VPNUSER) --keepalive
 
 # Send command
 expect -exact "Password for VPN:"

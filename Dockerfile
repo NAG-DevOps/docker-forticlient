@@ -7,11 +7,11 @@ RUN apt-get update && \
 WORKDIR /root
 
 # Install fortivpn client unofficial .deb
-RUN wget 'https://hadler.me/files/forticlient-sslvpn_4.4.2329-1_amd64.deb' -O forticlient-sslvpn_amd64.deb
-RUN dpkg -x forticlient-sslvpn_amd64.deb /usr/share/forticlient
+RUN wget 'https://fortinet.egnyte.com/dd/ZGUGMw1Xxh/' -O forticlient-sslvpn_amd64.tar.gz
+RUN tar xzvf forticlient-sslvpn_amd64.tar.gz
 
 # Run setup
-RUN /usr/share/forticlient/opt/forticlient-sslvpn/64bit/helper/setup.linux.sh 2
+RUN echo "yes" > /root/forticlientsslvpn/64bit/helper/setup
 
 # Copy runfiles
 COPY forticlient /usr/bin/forticlient

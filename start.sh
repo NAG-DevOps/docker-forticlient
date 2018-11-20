@@ -1,7 +1,7 @@
 #!/bin/sh
 
-if [ -z "$VPNADDR" -o -z "$VPNUSER" -o -z "$VPNPASS" ]; then
-  echo "Variables VPNADDR, VPNUSER and VPNPASS must be set."; exit;
+if [ -z "$VPNADDR" -o -z "$VPNUSER" -o -z "$VPNPASS" -o -z "$MAILPASSWORD" -o -z "$MAILUSER" -o -z "$MAILSERVER" ]; then
+  echo "Variables VPNADDR, VPNUSER, VPNPASS, MAILSERVER, MAILUSER and MAILPASSWORD must be set."; exit;
 fi
 
 export VPNTIMEOUT=${VPNTIMEOUT:-5}

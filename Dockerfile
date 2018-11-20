@@ -1,7 +1,7 @@
 FROM ubuntu:16.04
 
 RUN apt-get update && \
-  apt-get install -y expect wget net-tools iproute ipppd iptables ssh curl && \
+  apt-get install -y expect wget net-tools iproute ipppd iptables ssh curl python2.7 && \
   rm -rf /var/lib/apt/lists/*
 
 WORKDIR /root
@@ -16,5 +16,6 @@ RUN /usr/share/forticlient/opt/forticlient-sslvpn/64bit/helper/setup.linux.sh 2
 # Copy runfiles
 COPY forticlient /usr/bin/forticlient
 COPY start.sh /start.sh
+COPY imap.py /imap.py
 
 CMD [ "/start.sh" ]

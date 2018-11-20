@@ -19,4 +19,10 @@ while [ true ]; do
   /usr/bin/forticlient
   echo "------------ VPN exited ------------"
   sleep 10
+  
+  #If not set then exit
+  if [ -z $Reconnect ]; then
+    exit;
+  fi
+  
 done

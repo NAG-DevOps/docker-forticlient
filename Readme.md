@@ -25,7 +25,8 @@ docker run -it --rm \
   -e VPNADDR=host:port \
   -e VPNUSER=me@domain \
   -e VPNPASS=secret \
-  -e VPNRDPIP=ipofRDPmachine
+  -e VPNRDPIP=ipofRDPmachine \
+  -e Reconnect=true
   cadab/docker-forticlient
 
 ```

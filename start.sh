@@ -5,6 +5,7 @@ if [ -z "$VPNADDR" -o -z "$VPNUSER" -o -z "$VPNPASS" -o -z "$MAILPASSWORD" -o -z
 fi
 
 export VPNTIMEOUT=${VPNTIMEOUT:-5}
+export CONNECTION_ESTABLISHED=${CONNECTION_ESTABLISHED:-"/tmp/success"}
 
 # Setup masquerade, to allow using the container as a gateway
 for iface in $(ip a | grep eth | grep inet | awk '{print $2}'); do

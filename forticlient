@@ -1,6 +1,7 @@
 #!/usr/bin/expect -f
 
 set timeout $env(VPNTIMEOUT)
+set filename $env(CONNECTION_ESTABLISHED)
 
 spawn /root/forticlientsslvpn/64bit/forticlientsslvpn_cli --server $env(VPNADDR) --vpnuser $env(VPNUSER)
 
@@ -30,6 +31,10 @@ expect -i $docker {
     exit 1
   }
 }
+
+set fileStream [open "$filename" w]
+puts $fileStream "Tunnel open"
+close $fileStream
 
 # Expect tunnel to stop but not exit
 set timeout -1

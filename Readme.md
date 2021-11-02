@@ -6,9 +6,7 @@ Connect to a FortiNet VPNs through docker
 
 The container uses the forticlientsslvpn_cli linux binary to manage ppp interface
 
-This allows the user to RDP to the docker host with the specified port, which will then be forwarded to the docker container running the vpn, and finally redirected to the remote machine you wish to connect to (set by VPNRDPIP).
-
-If running the docker container from the machine you wish to connect from you can omit the -p settings, and connect to the ip address of the container on port 3380.
+This allows you to forward requests through the docker container as proxy on the VPN network.
 
 ### Windows
 
@@ -21,15 +19,28 @@ This should work with docker on windows, however with Windows 10 I see an issue 
 # Start the priviledged docker container with a static ip
 docker run -it --rm \
   --privileged \
-  -p 1234:3380 \
+  -p 3389:3389 \
+  -p 3390:3390 \
   -e VPNADDR=host:port \
   -e VPNUSER=me@domain \
   -e VPNPASS=secret \
-  -e VPNRDPIP=ipofRDPmachine \
+  -e DESTINATIONS="3089:192.168.1.2:3389|3090:192.168.1.3:3389" \
   -e Reconnect=true
-  cadab/docker-forticlient
-
+  ghcr.io/jamescoverdale/forticlient-forwarder:latest
+  
 ```
+
+`Destinations` is a pipe `|` delimited string of destinations you want to forward to. This is then further colon `:` delimited to define the local port, host ip and host port. Definition of a `Local Port` allows you to forward to multiple hosts that use the same port as seen in the example (or even http/https hosts)
+
+`LocalPort1:HostIP1:HostPort1|localPort2:HostIP2:HostPort2`
+
+The above example would forward requests:
+  
+  `DockerIP:3389` to `192.168.1.2:3389`
+  
+  `DockerIP:3390` to `192.168.1.3:3389`
+  
+ This would allow you to RDP two different machines on the VPN network from your host machine, you can add as many destinations as you require.
 
 ## Misc
 

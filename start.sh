@@ -11,7 +11,7 @@ do
 	localport="$(echo $i | cut -d':' -f1)"
 	host="$(echo $i | cut -d':' -f2)"
 	destport="$(echo $i | cut -d':' -f3)"
-	echo "Setting forward for $localport -> $host:$port"
+	echo "Setting forward for $localport -> $host:$destport"
 	iptables -t nat -A PREROUTING -p tcp --dport $localport -j DNAT --to-destination $host:$destport  
 done
 

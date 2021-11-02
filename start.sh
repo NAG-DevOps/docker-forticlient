@@ -1,6 +1,6 @@
 #!/bin/sh
 
-if [ -z "$VPNADDR" -o -z "$VPNUSER" -o -z "$VPNPASS" -o -z "$DESTINATIONS" -o]; then
+if [ -z "$VPNADDR" -o -z "$VPNUSER" -o -z "$VPNPASS" -o -z "$DESTINATIONS"]; then
   echo "Variables DESTINATIONS (host1:port1|host2:port2), VPNADDR, VPNUSER and VPNPASS must be set."; exit;
 fi
 

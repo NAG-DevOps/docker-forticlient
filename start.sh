@@ -9,7 +9,8 @@ export VPNTIMEOUT=${VPNTIMEOUT:-5}
 for i in $(echo $DESTINATIONS | tr "|" "\n")
 do
 	host="$(echo $i | cut -d':' -f1)"
-	port="$(echo $i | cut -d':' -f2)"	
+	port="$(echo $i | cut -d':' -f2)"
+	echo "Setting forward for $host:$port"
 	iptables -t nat -A PREROUTING -p tcp --dport $port -j DNAT --to-destination $host:$port  
 done
 

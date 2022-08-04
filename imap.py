@@ -40,7 +40,7 @@ def process_mailbox(M):
             subject = unicode(decode[0])
             sub, authcode = subject.split(": ")
             print '%s' % (authcode)
-            fount = 1
+            found = 1
         time.sleep(5)
 
 

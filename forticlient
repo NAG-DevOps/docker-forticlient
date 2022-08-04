@@ -1,9 +1,8 @@
 #!/usr/bin/expect -f
 
 set timeout $env(VPNTIMEOUT)
-set filename $env(CONNECTION_ESTABLISHED)
 
-spawn /root/forticlientsslvpn/64bit/forticlientsslvpn_cli --server $env(VPNADDR) --vpnuser $env(VPNUSER)
+spawn "/usr/share/forticlient/opt/forticlient-sslvpn/64bit/forticlientsslvpn_cli" --server $env(VPNADDR) --vpnuser $env(VPNUSER) --keepalive
 
 # Send command
 expect -exact "Password for VPN:"
@@ -16,15 +15,23 @@ expect -exact "Would you like to connect to this server? (Y/N)" {
   send -- "Y\n"
 }
 
-# In case of invalid certificate
+# If two factor token is requested
+#delay so server will send the email
+sleep 10
 set docker $spawn_id
 expect "An email message containing a Token Code will be sent to*"
-spawn -noecho python2.7 /imap.py $env(MAILUSER) $env(MAILPASSWORD) $env(MAILSERVER)
-expect EOF 
-send -i $docker $expect_out(buffer)
+set token [split [exec python2.7 /imap.py $env(MAILUSER) $env(MAILPASSWORD) $env(MAILSERVER)]]
+expect EOF
+send -i $docker $token
+send -i $docker "\n"
+
+# In case of token
+expect -exact "A FortiToken code is required for SSL-VPN login authentication." {
+  send -- "$env(VPNTOKEN)\n"
+}
 
 # Expect tunnel to actually start
-expect -i $docker {
+expect {
   "STATUS::Tunnel running" {
   } timeout {
     send_user -- "Failed to bring tunnel up after $env(VPNTIMEOUT)s\n"
@@ -32,13 +39,9 @@ expect -i $docker {
   }
 }
 
-set fileStream [open "$filename" w]
-puts $fileStream "Tunnel open"
-close $fileStream
-
 # Expect tunnel to stop but not exit
 set timeout -1
-expect -i $docker {
+expect {
   "STATUS::Tunnel closed" {
     exit 1
   }

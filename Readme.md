@@ -75,3 +75,4 @@ docker inspect --format '{{ .NetworkSettings.IPAddress }}' <container>
 ### Precompiled binaries
 
 Thanks to [https://hadler.me](https://hadler.me/linux/forticlient-sslvpn-deb-packages/) for hosting up to date precompiled binaries which are used in this Dockerfile.
+Also [henry42](https://github.com/henry42/docker-forticlient-with-proxy/) and [siwaonline](https://github.com/siwaonline/docker-forticlient) for souces.

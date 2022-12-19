@@ -6,7 +6,7 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 #  apt-get install -y expect wget net-tools iproute2 ipppd iptables ssh curl gnupg && \
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
-  apt-get install -y expect wget net-tools iproute2 iptables ssh curl gnupg && \
+  apt-get install -y expect wget net-tools ca-certificates iproute2 iptables ssh curl gnupg && \
   rm -rf /var/lib/apt/lists/*
 
 WORKDIR /root
@@ -16,7 +16,8 @@ WORKDIR /root
 #RUN dpkg -x forticlient-sslvpn_amd64.deb /usr/share/forticlient
 
 ## Install official client
-RUN wget --no-check-certificate -vO - https://repo.fortinet.com/repo/7.0/ubuntu/DEB-GPG-KEY | apt-key add -
+#RUN wget --no-check-certificate -vO - https://repo.fortinet.com/repo/7.0/ubuntu/DEB-GPG-KEY | apt-key add -
+RUN wget --no-check-certificate -vO - https://repo.fortinet.com/repo/7.0/ubuntu/DEB-GPG-KEY | gpg --dearmor > /usr/share/keyrings/fortinet-archive-keyring.gpg
 RUN DEBIAN_FRONTEND=noninteractive echo "deb [arch=amd64] https://repo.fortinet.com/repo/7.0/ubuntu/ /bionic multiverse:" >> /etc/apt/sources.list \
     && apt-get update \
     && apt install forticlient \

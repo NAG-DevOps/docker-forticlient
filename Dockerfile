@@ -16,7 +16,7 @@ WORKDIR /root
 #RUN dpkg -x forticlient-sslvpn_amd64.deb /usr/share/forticlient
 
 ## Install official client
-RUN wget --no-check-certificate -O- https://repo.fortinet.com/repo/7.0/ubuntu/DEB-GPG-KEY | apt-key add -
+RUN wget --no-check-certificate -O- https://repo.fortinet.com/repo/7.0/ubuntu/DEB-GPG-KEY | apt-key add -
 #RUN wget --no-check-certificate -vO - https://repo.fortinet.com/repo/7.0/ubuntu/DEB-GPG-KEY | gpg --dearmor > /usr/share/keyrings/fortinet-archive-keyring.gpg
 RUN DEBIAN_FRONTEND=noninteractive echo "deb [arch=amd64] https://repo.fortinet.com/repo/7.0/ubuntu/ /bionic multiverse:" >> /etc/apt/sources.list \
     && apt-get update \

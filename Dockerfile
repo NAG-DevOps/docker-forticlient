@@ -1,7 +1,7 @@
 FROM ubuntu:18.04
 
 RUN apt-get update && \
-  apt-get install -y expect wget net-tools iproute ipppd iptables ssh curl && \
+  apt-get install -y expect wget net-tools iproute2 ipppd iptables ssh curl && \
   rm -rf /var/lib/apt/lists/*
 
 WORKDIR /root
@@ -12,7 +12,7 @@ WORKDIR /root
 
 ## Install official client
 RUN wget -O - https://repo.fortinet.com/repo/7.0/ubuntu/DEB-GPG-KEY | sudo apt-key add -
-RUN echo "deb [arch=amd64] https://repo.fortinet.com/repo/6.4/ubuntu/ /bionic multiverse:" >> /etc/apt/sources.list \
+RUN echo "deb [arch=amd64] https://repo.fortinet.com/repo/7.0/ubuntu/ /bionic multiverse:" >> /etc/apt/sources.list \
     && apt-get update \
     && apt install forticlient \
     && apt-get clean

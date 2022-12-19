@@ -21,6 +21,6 @@ jobs:
         password: ${{ secrets.GITHUB_TOKEN }}
     
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag ghcr.io/NAG-DevOps/docker-forticlient:latest
+      run: docker build . --file Dockerfile --tag ghcr.io/nag-devops/docker-forticlient:latest
     - name : Push Container
-      run: docker push ghcr.io/NAG-DevOps/docker-forticlient:latest
+      run: docker push ghcr.io/nag-devops/docker-forticlient:latest

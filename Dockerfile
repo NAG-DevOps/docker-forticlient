@@ -1,5 +1,8 @@
 FROM ubuntu:18.04
 
+ENV TZ=America/Montreal
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
 RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
   apt-get install -y expect wget net-tools iproute2 ipppd iptables ssh curl && \
   rm -rf /var/lib/apt/lists/*

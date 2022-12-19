@@ -12,7 +12,7 @@ WORKDIR /root
 
 ## Install official client
 RUN wget -O - https://repo.fortinet.com/repo/7.0/ubuntu/DEB-GPG-KEY | sudo apt-key add -
-RUN echo "deb [arch=amd64] https://repo.fortinet.com/repo/6.4/ubuntu/ /bionic multiverse: >> /etc/apt/sources.list
+RUN echo "deb [arch=amd64] https://repo.fortinet.com/repo/6.4/ubuntu/ /bionic multiverse:" >> /etc/apt/sources.list
     && apt-get update \
     && apt install forticlient \
     && apt-get clean

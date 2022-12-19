@@ -4,13 +4,8 @@ Connect to a FortiNet VPNs through docker
 
 ## Usage
 
-The container uses the forticlientsslvpn_cli linux binary to manage ppp interface
-
+The container uses the forticlientsslvpn_cli linux binary to manage ppp interface.
 This allows you to forward requests through the docker container as proxy on the VPN network.
-
-### Windows
-
-This should work with docker on windows, however with Windows 10 I see an issue with opening the vpn tunnel.
 
 ### Linux
 
@@ -26,7 +21,7 @@ docker run -it --rm \
   -e VPNPASS=secret \
   -e DESTINATIONS="3089:192.168.1.2:3389|3090:192.168.1.3:3389" \
   -e Reconnect=true
-  ghcr.io/jamescoverdale/forticlient-forwarder:latest
+  ghcr.io/NAG-DevOps/docker-forticlient:latest
   
 ```
 
@@ -42,6 +37,14 @@ The above example would forward requests:
   
  This would allow you to RDP two different machines on the VPN network from your host machine, you can add as many destinations as you require.
 
+### Windows
+
+This should work with docker on Windows, however with Windows 10 I see an issue with opening the vpn tunnel.
+
+## macOS
+
+TODO
+
 ## Misc
 
 If you don't want to use a docker network, you can find out the container ip once it is started with:
@@ -54,3 +57,9 @@ docker inspect --format '{{ .NetworkSettings.IPAddress }}' <container>
 ### Precompiled binaries
 
 Thanks to [https://hadler.me](https://hadler.me/linux/forticlient-sslvpn-deb-packages/) for hosting up to date precompiled binaries which are used in this Dockerfile.
+
+### References
+
+- This fork is based on several forks of this repo combining their features deemed useful:
+  - https://github.com/jamescoverdale/docker-forticlient
+- [Fortinet documentation on downloaing the official client](https://www.fortinet.com/support/product-downloads/linux)

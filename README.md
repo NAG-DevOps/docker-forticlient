@@ -1,4 +1,4 @@
-# forticlient
+# Forticlient VPN
 
 Connect to a FortiNet VPNs through docker
 
@@ -6,23 +6,33 @@ Connect to a FortiNet VPNs through docker
 
 The container uses the forticlientsslvpn_cli linux binary to manage ppp interface.
 This allows you to forward requests through the docker container as proxy on the VPN network.
+All of the container traffic is routed through the VPN, so you can in turn route host traffic through the container to access remote subnets.
 
 ### Linux
 
 ```bash
+# Create a docker network, to be able to control addresses
+docker network create --subnet=172.20.0.0/16 fortinet
 
 # Start the priviledged docker container with a static ip
 docker run -it --rm \
   --privileged \
-  -p 3389:3389 \
-  -p 3390:3390 \
-  -e VPNADDR=host:port \
-  -e VPNUSER=me@domain \
-  -e VPNPASS=secret \
-  -e DESTINATIONS="3089:192.168.1.2:3389|3090:192.168.1.3:3389" \
-  -e Reconnect=true
-  ghcr.io/NAG-DevOps/docker-forticlient:latest
-  
+  --net fortinet --ip 172.20.0.2 \
+  -e VPNADDR=address:port \
+  -e VPNUSER=user@name \
+  -e VPNPASS='password' \
+  -p 11080:1080 \
+  -p 18123:8123 \
+  -e MAILUSER=user@mail \
+  -e MAILPASSWORD=email_pass \
+  -e MAILSERVER=mail_server \
+  NAG-DevOps/forticlient-with-proxy
+
+# Add route for you remote subnet (ex. 10.201.0.0/16)
+ip route add 10.201.0.0/16 via 172.20.0.2
+
+# Access remote host from the subnet
+ssh 10.201.8.1
 ```
 
 `Destinations` is a pipe `|` delimited string of destinations you want to forward to. This is then further colon `:` delimited to define the local port, host ip and host port. Definition of a `Local Port` allows you to forward to multiple hosts that use the same port as seen in the example (or even http/https hosts)
@@ -35,15 +45,63 @@ The above example would forward requests:
   
   `DockerIP:3390` to `192.168.1.3:3389`
   
- This would allow you to RDP two different machines on the VPN network from your host machine, you can add as many destinations as you require.
+This would allow you to RDP two different machines on the VPN network from your host machine, you can add as many destinations as you require.
 
-### Windows
+### Only Proxy
+
+```bash
+# Start the priviledged docker container on its host network
+docker run -it --rm \
+  --privileged \
+  -e VPNADDR=address:port \
+  -e VPNUSER=user@name \
+  -e VPNPASS='password' \
+  -p 11080:1080 \
+  -p 18123:8123 \
+  -e MAILUSER=user@mail \
+  -e MAILPASSWORD=email_pass \
+  -e MAILSERVER=mail_server \
+  -p 11080:1080 \
+  -p 18123:8123 \
+  -e VPNTOKEN=token \
+  NAG-DevOps/forticlient-with-proxy
+```
+
+Docker will start two proxies, 1080 for socks5 and 8123 for http.
+
+
+### Windows (outdated)
 
 This should work with docker on Windows, however with Windows 10 I see an issue with opening the vpn tunnel.
 
-## macOS
+### macOS (outdated)
 
-TODO
+Docker Beta's kernel lasks ppp interface support, so you'll need to use a docker-machine VM
+
+```bash
+# Create a docker-machine and configure shell to use it
+docker-machine create fortinet --driver virtualbox
+eval $(docker-machine env fortinet)
+
+# Start the priviledged docker container
+docker run -it --rm \
+  --privileged --net host \
+ -e VPNADDR=address:port \
+  -e VPNUSER=user@name \
+  -e VPNPASS='password' \
+  -p 11080:1080 \
+  -p 18123:8123 \
+  -e MAILUSER=user@mail \
+  -e MAILPASSWORD=email_pass \
+  -e MAILSERVER=mail_server \
+  NAG-DevOps/forticlient
+
+# Add route for you remote subnet (ex. 10.201.0.0/16)
+sudo route add -net 10.201.0.0/16 $(docker-machine ip fortinet)
+
+# Access remote host from the subnet
+ssh 10.201.8.1
+```
 
 ## Misc
 
@@ -56,10 +114,21 @@ docker inspect --format '{{ .NetworkSettings.IPAddress }}' <container>
 
 ### Precompiled binaries
 
-Thanks to [https://hadler.me](https://hadler.me/linux/forticlient-sslvpn-deb-packages/) for hosting up to date precompiled binaries which are used in this Dockerfile.
+- https://repo.fortinet.com/
+- Locally provided by the organization (.deb or .rpm) for EMS
 
-### References
+### References and thanks
 
 - This fork is based on several forks of this repo combining their features deemed useful:
-  - https://github.com/jamescoverdale/docker-forticlient
-- [Fortinet documentation on downloaing the official client](https://www.fortinet.com/support/product-downloads/linux)
+  - [jamescoverdale](https://github.com/jamescoverdale/docker-forticlient)
+  - [yuga-92](https://github.com/yuga-92/docker-forticlient)
+  - [AuchanDirect](https://github.com/AuchanDirect/docker-forticlient)
+  - [DeanF](https://github.com/DeanF/docker-forticlient)
+  - [henry42](https://github.com/henry42/docker-forticlient-with-proxy/)
+  - [siwaonline](https://github.com/siwaonline/docker-forticlient) for the base images and idea.
+
+- FortiClient
+  - [Fortinet documentation on downloaing the official client](https://www.fortinet.com/support/product-downloads/linux)
+  - [CLI](https://docs.fortinet.com/document/forticlient/7.4.1/administration-guide/041299/forticlient-linux-cli-commands)
+  - [Repo Install](https://repo.fortinet.com/)
+  - [File Install](https://docs.fortinet.com/document/forticlient/7.4.2/administration-guide/437544/installing-forticlient-linux-using-a-downloaded-installation-file)

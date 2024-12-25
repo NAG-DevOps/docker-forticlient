@@ -15,6 +15,21 @@ expect -exact "Would you like to connect to this server? (Y/N)" {
   send -- "Y\n"
 }
 
+# If two factor token is requested
+#delay so server will send the email
+sleep 10
+set docker $spawn_id
+expect "An email message containing a Token Code will be sent to*"
+set token [split [exec python2.7 /imap.py $env(MAILUSER) $env(MAILPASSWORD) $env(MAILSERVER)]]
+expect EOF
+send -i $docker $token
+send -i $docker "\n"
+
+# In case of token
+expect -exact "A FortiToken code is required for SSL-VPN login authentication." {
+  send -- "$env(VPNTOKEN)\n"
+}
+
 # Expect tunnel to actually start
 expect {
   "STATUS::Tunnel running" {

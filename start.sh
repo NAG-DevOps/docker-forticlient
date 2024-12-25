@@ -1,10 +1,12 @@
 #!/bin/sh
 
-if [ -z "$VPNADDR" -o -z "$VPNUSER" -o -z "$VPNPASS" -o -z "$DESTINATIONS" ]; then
-  echo "Variables DESTINATIONS (localPort1:host1:destPort1|localPort2:host2:destPort2), VPNADDR, VPNUSER and VPNPASS must be set."; exit;
+#if [ -z "$VPNADDR" -o -z "$VPNUSER" -o -z "$VPNPASS" -o -z "$DESTINATIONS" -o -z "$MAILPASSWORD" -o -z "$MAILUSER" -o -z "$MAILSERVER" ]; then
+if [ -z "$VPNADDR" -o -z "$VPNUSER" -o -z "$VPNPASS" -o -z "$DESTINATIONS" ]; then 
+  echo "Variables VPNADDR, VPNUSER, VPNPASS, DESTINATIONS (localPort1:host1:destPort1|localPort2:host2:destPort2),MAILSERVER, MAILUSER and MAILPASSWORD must be set."; exit;
 fi
 
 export VPNTIMEOUT=${VPNTIMEOUT:-5}
+export CONNECTION_ESTABLISHED=${CONNECTION_ESTABLISHED:-"/tmp/success"}
 
 for i in $(echo $DESTINATIONS | tr "|" "\n")
 do	
@@ -19,10 +21,11 @@ iptables -t nat -A POSTROUTING -j MASQUERADE
 
 # Setup masquerade, to allow using the container as a gateway
 for iface in $(ip a | grep eth | grep inet | awk '{print $2}'); do
+  echo "$iface"
   iptables -t nat -A POSTROUTING -s "$iface" -j MASQUERADE
 done
 
- mknod /dev/ppp c 108 0
+mknod /dev/ppp c 108 0
 
 while [ true ]; do
   echo "------------ VPN Starts ------------"

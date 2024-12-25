@@ -21,6 +21,8 @@ jobs:
         password: ${{ secrets.GITHUB_TOKEN }}
     
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag ghcr.io/nag-devops/docker-forticlient:latest
-    - name : Push Container
-      run: docker push ghcr.io/nag-devops/docker-forticlient:latest
+      #run: docker build . --file Dockerfile --tag ghcr.io/nag-devops/docker-forticlient:latest
+      run: echo "Registry image CI build is currently disabled" 
+    - name: Push Container
+      #run: docker push ghcr.io/nag-devops/docker-forticlient:latest
+      run: echo "Registry image push is currently disabled" 

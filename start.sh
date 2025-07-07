@@ -21,7 +21,7 @@ iptables -t nat -A POSTROUTING -j MASQUERADE
 
 # Setup masquerade, to allow using the container as a gateway
 for iface in $(ip a | grep eth | grep inet | awk '{print $2}'); do
-  echo "$iface"
+  echo "$0: interface: $iface"
   iptables -t nat -A POSTROUTING -s "$iface" -j MASQUERADE
 done
 
@@ -35,6 +35,7 @@ while [ true ]; do
   
   #If not set then exit
   if [ $Reconnect != "true" ] || [ $Reconnect != "TRUE" ]; then
+    echo "$0: Reconnect=$Reconnect: exititng..."
     exit;
   fi
   

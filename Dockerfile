@@ -1,58 +1,71 @@
-FROM ubuntu:18.04
+FROM ubuntu:22.04
 
 ENV TZ=America/Montreal
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-RUN DEBIAN_FRONTEND=noninteractive apt-get update
-RUN apt-get install -y ipppd expect wget net-tools ca-certificates iproute2 iptables ssh curl gnupg polipo && \
-    apt-get install -y gcc-4.9 make libpam0g-dev libldap2-dev libssl-dev && \
-    rm -rf /var/lib/apt/lists/*
-
 WORKDIR /root
 
-## Install fortivpn client unofficial .deb
-#RUN wget 'https://hadler.me/files/forticlient-sslvpn_4.4.2332-1_amd64.deb' -O forticlient-sslvpn_amd64.deb
-#RUN dpkg -x forticlient-sslvpn_amd64.deb /usr/share/forticlient
+# Install build dependencies and runtime packages
+RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
+    apt-get install -y --no-install-recommends \
+    gcc make libpam0g-dev libldap2-dev libssl-dev \
+    wget ca-certificates gnupg && \
+    rm -rf /var/lib/apt/lists/*
 
-## Install official client
-RUN wget --no-check-certificate -O- https://repo.fortinet.com/repo/7.0/ubuntu/DEB-GPG-KEY | apt-key add -
-#RUN wget --no-check-certificate -vO - https://repo.fortinet.com/repo/7.0/ubuntu/DEB-GPG-KEY | gpg --dearmor > /usr/share/keyrings/fortinet-archive-keyring.gpg
-RUN DEBIAN_FRONTEND=noninteractive echo "deb [arch=amd64] https://repo.fortinet.com/repo/7.0/ubuntu/ /bionic multiverse:" >> /etc/apt/sources.list \
-    && apt-get update \
-    && apt install forticlient \
-    && apt-get clean
+### Install FortiClient 7.4 from official repository
+### Use gpg --dearmor to handle GPG key importing for newer Ubuntu versions
+RUN wget -O - https://repo.fortinet.com/repo/forticlient/7.4/ubuntu22/DEB-GPG-KEY | gpg --dearmor | tee /usr/share/keyrings/repo.fortinet.com.gpg && \
+    DEBIAN_FRONTEND=noninteractive echo "deb [arch=amd64 signed-by=/usr/share/keyrings/repo.fortinet.com.gpg] https://repo.fortinet.com/repo/forticlient/7.4/ubuntu22/ stable non-free" >> /etc/apt/sources.list && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends forticlient && \
+    rm -rf /var/lib/apt/lists/*
 
-# Install SS5
-RUN wget -O ss5.tar.gz "http://downloads.sourceforge.net/project/ss5/ss5/3.8.9-8/ss5-3.8.9-8.tar.gz"
+# Install runtime dependencies and minimal XFCE4 desktop
+RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
+    apt-get install -y --no-install-recommends \
+    tinyproxy expect wget net-tools ca-certificates iproute2 iptables ssh curl \
+    xdg-utils libnss3 libasound2 libgconf-2-4 libgtk-3-0 libuuid1 libsecret-1-0 \
+    xfce4 xfce4-terminal xfce4-panel xfce4-session xfce4-settings thunar \
+    xfce4-whiskermenu-plugin dbus dbus-x11 x11-utils xauth \
+    libcanberra-gtk-module libcanberra-gtk3-module libcanberra0 libnotify-bin \
+    policykit-1 at-spi2-core pm-utils \
+    xserver-xephyr xvfb x11vnc pulseaudio-utils libpulse0 x11-xserver-utils && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-RUN groupadd -r ss5 && useradd -r -g ss5 ss5 && \
-  mkdir -p /usr/src/ss5 \
-  && tar -xzf ss5.tar.gz -C /usr/src/ss5 --strip-components=1 \
-  && rm ss5.tar.gz \
-  && cd /usr/src/ss5 \
-  && ln -s /usr/bin/gcc-4.9 /usr/bin/gcc && touch /usr/src/gcc \
-  && ./configure \
-  && make \
-  && make install \
-  && cd / \
-  && rm /usr/src/gcc \
-  && apt-get purge -y --auto-remove gcc-4.9 make libpam0g-dev libldap2-dev libssl-dev \
-  && rm -rf /usr/src/ss5 \
-  && sed -i "/#auth/a\auth 0.0.0.0\/0 - -" /etc/opt/ss5/ss5.conf \
-  && sed -i "/#permit/a\permit - 0.0.0.0\/0 - 0.0.0.0\/0 - - - - -" /etc/opt/ss5/ss5.conf \
-  && touch /var/log/ss5/ss5.log
+### Install Dante SOCKS5 server (modern alternative to SS5)
+RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
+    apt-get install -y --no-install-recommends dante-server && \
+    rm -rf /var/lib/apt/lists/* && \
+    mkdir -p /var/log/dante && \
+    chown -R nobody:nogroup /var/log/dante
 
-RUN rm -rf /var/lib/apt/lists/*
+# Configure Dante SOCKS5 server
+RUN echo "# Dante SOCKS5 configuration" > /etc/danted.conf && \
+    echo "internal: 0.0.0.0 port = 1080" >> /etc/danted.conf && \
+    echo "external: 0.0.0.0" >> /etc/danted.conf && \
+    echo "" >> /etc/danted.conf && \
+    echo "client pass {" >> /etc/danted.conf && \
+    echo "    from: 0.0.0.0/0 to: 0.0.0.0/0" >> /etc/danted.conf && \
+    echo "}" >> /etc/danted.conf && \
+    echo "" >> /etc/danted.conf && \
+    echo "socks pass {" >> /etc/danted.conf && \
+    echo "    from: 0.0.0.0/0 to: 0.0.0.0/0" >> /etc/danted.conf && \
+    echo "}" >> /etc/danted.conf
 
-# Run setup
-RUN /usr/share/forticlient/opt/forticlient-sslvpn/64bit/helper/setup 2
+# Configure tinyproxy for HTTP proxy on port 8123
+RUN sed -i 's/^Port 8888/Port 8123/' /etc/tinyproxy/tinyproxy.conf && \
+    sed -i 's/^# Allow 127.0.0.1/Allow 0.0.0.0\/0/' /etc/tinyproxy/tinyproxy.conf
 
-# Copy runfiles
+# Copy runfiles (These files need to be present in your local directory when building)
 COPY forticlient /usr/bin/forticlient
 COPY start.sh /start.sh
 COPY imap.py /imap.py
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
+# Expose ports: 1080 (Dante SOCKS5), 8123 (tinyproxy HTTP), VPN tunnel interface
 EXPOSE 1080
 EXPOSE 8123
 
-CMD [ "/start.sh" ]
+CMD [ "/entrypoint.sh" ]

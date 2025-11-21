@@ -8,14 +8,14 @@ WORKDIR /root
 # Install build dependencies and runtime packages
 RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt-get install -y --no-install-recommends \
-    gcc make libpam0g-dev libldap2-dev libssl-dev \
+    gcc make libpam0g-dev libldap2-dev libssl-dev libgbm1\
     wget ca-certificates gnupg && \
     rm -rf /var/lib/apt/lists/*
 
-### Install FortiClient 7.4 from official repository
+### Install FortiClient 7.2 from official repository
 ### Use gpg --dearmor to handle GPG key importing for newer Ubuntu versions
-RUN wget -O - https://repo.fortinet.com/repo/forticlient/7.4/ubuntu22/DEB-GPG-KEY | gpg --dearmor | tee /usr/share/keyrings/repo.fortinet.com.gpg && \
-    DEBIAN_FRONTEND=noninteractive echo "deb [arch=amd64 signed-by=/usr/share/keyrings/repo.fortinet.com.gpg] https://repo.fortinet.com/repo/forticlient/7.4/ubuntu22/ stable non-free" >> /etc/apt/sources.list && \
+RUN wget -O - https://repo.fortinet.com/repo/forticlient/7.2/debian/DEB-GPG-KEY | gpg --dearmor | tee /usr/share/keyrings/repo.fortinet.com.gpg > /dev/null && \
+    echo "deb [arch=amd64 signed-by=/usr/share/keyrings/repo.fortinet.com.gpg] https://repo.fortinet.com/repo/forticlient/7.2/debian/ stable non-free" | tee /etc/apt/sources.list.d/fortinet-forticlient.list && \
     apt-get update && \
     apt-get install -y --no-install-recommends forticlient && \
     rm -rf /var/lib/apt/lists/*
